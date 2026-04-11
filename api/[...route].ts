@@ -9,8 +9,16 @@ import { parseVercelBody } from '../server/parseVercelBody'
 import { processUpvote } from '../server/upvoteService'
 import { processVerifyHost } from '../server/verifyHostService'
 
-/** Path after `/api/` — works on Vercel and ignores dynamic-route query shape. */
+/**
+ * Path segments after `/api/` — prefer Vercel's dynamic `[...route]` query, then `req.url`.
+ */
 function routeSegments(req: VercelRequest): string[] {
+  const q = req.query.route
+  if (Array.isArray(q)) return q
+  if (typeof q === 'string' && q.length > 0) {
+    return q.split('/').filter(Boolean)
+  }
+
   const url = req.url ?? '/'
   const pathOnly = url.split('?')[0] ?? '/'
   const marker = '/api/'
