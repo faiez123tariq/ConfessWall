@@ -1,4 +1,4 @@
-import type { Database } from '../../src/types/database'
+import type { Database } from '../src/types/database'
 
 import { supabaseAdmin } from './supabaseAdmin'
 import { runScoreConfession } from './scoreConfession'

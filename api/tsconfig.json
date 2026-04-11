@@ -11,5 +11,9 @@
     "verbatimModuleSyntax": true,
     "types": ["node"]
   },
-  "include": ["./**/*.ts", "../src/types/database.ts"]
+  "include": [
+    "./**/*.ts",
+    "../server/**/*.ts",
+    "../src/types/database.ts"
+  ]
 }
