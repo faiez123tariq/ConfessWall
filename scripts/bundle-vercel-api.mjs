@@ -1,9 +1,7 @@
 /**
- * Vercel's TS compile emits extensionless ESM imports → ERR_MODULE_NOT_FOUND for ../lib/...
- * This bundles api/[...route].ts into a single api/[...route].mjs (lib inlined; node_modules external).
- * On Vercel (VERCEL=1), removes the .ts source so only one Serverless Function is deployed.
- *
- * Local full check: FORCE_API_BUNDLE=1 npm run build  (keeps .ts; writes .mjs — gitignored)
+ * Vercel's TS → ESM compile keeps extensionless imports → ERR_MODULE_NOT_FOUND for ../lib/...
+ * We always bundle api/[...route].ts into api/[...route].js (CJS, lib inlined; node_modules external).
+ * On Vercel we delete the .ts file so the platform does not recompile it over our bundle.
  */
 import esbuild from 'esbuild'
 import fs from 'node:fs'
@@ -13,16 +11,17 @@ import { fileURLToPath } from 'node:url'
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const root = path.join(__dirname, '..')
 const entry = path.join(root, 'api', '[...route].ts')
-const outfile = path.join(root, 'api', '[...route].mjs')
+const outfile = path.join(root, 'api', '[...route].js')
 
-const shouldBundle =
-  process.env.VERCEL === '1' || process.env.FORCE_API_BUNDLE === '1'
-
-if (!shouldBundle) {
-  console.log(
-    '[bundle-vercel-api] skipped (runs on Vercel builds; locally use FORCE_API_BUNDLE=1 to test)'
-  )
-  process.exit(0)
+function isVercelBuild() {
+  if (process.env.VERCEL_UNLINK_TS === '1') return true
+  if (process.env.VERCEL_UNLINK_TS === '0') return false
+  const v = process.env.VERCEL
+  if (v === '1' || v === 'true') return true
+  if (v && v !== '0') return true
+  if (process.env.VERCEL_ENV === 'production' || process.env.VERCEL_ENV === 'preview')
+    return true
+  return false
 }
 
 if (!fs.existsSync(entry)) {
@@ -30,18 +29,31 @@ if (!fs.existsSync(entry)) {
   process.exit(1)
 }
 
+console.log(
+  '[bundle-vercel-api] env VERCEL=%s VERCEL_ENV=%s CI=%s',
+  process.env.VERCEL ?? '',
+  process.env.VERCEL_ENV ?? '',
+  process.env.CI ?? ''
+)
+
 await esbuild.build({
   entryPoints: [entry],
   bundle: true,
   platform: 'node',
   target: 'node20',
-  format: 'esm',
+  format: 'cjs',
   outfile,
   packages: 'external',
   logLevel: 'info',
 })
 
-if (process.env.VERCEL === '1') {
+if (isVercelBuild()) {
   fs.unlinkSync(entry)
-  console.log('[bundle-vercel-api] removed api/[...route].ts (bundled to .mjs)')
+  console.log(
+    '[bundle-vercel-api] removed api/[...route].ts (deploy uses bundled .js only)'
+  )
+} else {
+  console.log(
+    '[bundle-vercel-api] kept api/[...route].ts for local dev (api/[...route].js is gitignored)'
+  )
 }
