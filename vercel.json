@@ -2,8 +2,7 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "functions": {
     "api/[...route].ts": {
-      "maxDuration": 60,
-      "includeFiles": "server/**"
+      "maxDuration": 60
     }
   },
   "rewrites": [

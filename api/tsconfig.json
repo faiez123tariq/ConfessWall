@@ -13,7 +13,6 @@
   },
   "include": [
     "./**/*.ts",
-    "../server/**/*.ts",
     "../src/types/database.ts"
   ]
 }
