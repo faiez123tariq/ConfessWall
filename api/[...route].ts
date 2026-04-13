@@ -1,12 +1,12 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 
-import { processConfess } from './_server/confessService'
-import { processDeleteConfession } from './_server/deleteConfessionService'
-import { processEndSession } from './_server/endSessionService'
-import { processJoin } from './_server/joinService'
-import { parseVercelBody } from './_server/parseVercelBody'
-import { processUpvote } from './_server/upvoteService'
-import { processVerifyHost } from './_server/verifyHostService'
+import { processConfess } from './server/confessService'
+import { processDeleteConfession } from './server/deleteConfessionService'
+import { processEndSession } from './server/endSessionService'
+import { processJoin } from './server/joinService'
+import { parseVercelBody } from './server/parseVercelBody'
+import { processUpvote } from './server/upvoteService'
+import { processVerifyHost } from './server/verifyHostService'
 
 /**
  * Path segments after `/api/` — prefer Vercel's dynamic `[...route]` query, then `req.url`.
