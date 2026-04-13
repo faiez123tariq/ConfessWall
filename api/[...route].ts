@@ -1,5 +1,4 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { waitUntil } from '@vercel/functions'
 
 import { processConfess } from '../server/confessService'
 import { processDeleteConfession } from '../server/deleteConfessionService'
@@ -44,6 +43,23 @@ export default async function handler(
       return
     }
 
+    if (name === 'health' && req.method === 'GET') {
+      res.status(200).json({
+        ok: true,
+        api: 'confession-wall',
+        hasSupabaseUrl: Boolean(
+          (process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL ?? '').trim()
+        ),
+        hasServiceRole: Boolean(
+          (process.env.SUPABASE_SERVICE_ROLE_KEY ?? '').trim()
+        ),
+        hasSessionId: Boolean(
+          (process.env.VITE_SESSION_ID ?? process.env.SESSION_ID ?? '').trim()
+        ),
+      })
+      return
+    }
+
     const body = parseVercelBody(req)
 
     if (name === 'join' && req.method === 'POST') {
@@ -55,6 +71,7 @@ export default async function handler(
     if (name === 'confess' && req.method === 'POST') {
       const out = await processConfess(body)
       if (out.backgroundWork) {
+        const { waitUntil } = await import('@vercel/functions')
         waitUntil(out.backgroundWork)
       }
       res.status(out.status).json(out.json)

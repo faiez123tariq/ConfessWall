@@ -136,6 +136,35 @@ function devApiPlugin() {
             return
           }
 
+          if (method === 'GET' && url === '/api/health') {
+            res.setHeader('Content-Type', 'application/json')
+            res.statusCode = 200
+            res.end(
+              JSON.stringify({
+                ok: true,
+                api: 'confession-wall',
+                hasSupabaseUrl: Boolean(
+                  (
+                    process.env.SUPABASE_URL ??
+                    process.env.VITE_SUPABASE_URL ??
+                    ''
+                  ).trim()
+                ),
+                hasServiceRole: Boolean(
+                  (process.env.SUPABASE_SERVICE_ROLE_KEY ?? '').trim()
+                ),
+                hasSessionId: Boolean(
+                  (
+                    process.env.VITE_SESSION_ID ??
+                    process.env.SESSION_ID ??
+                    ''
+                  ).trim()
+                ),
+              })
+            )
+            return
+          }
+
           if (method !== 'POST' && method !== 'DELETE') {
             next()
             return
