@@ -16,7 +16,7 @@ import { fileURLToPath } from 'node:url'
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const root = path.join(__dirname, '..')
 const entry = path.join(root, 'src-api', 'route.ts')
-const outfile = path.join(root, 'api', '[...route].js')
+const outfile = path.join(root, 'api', '[...route].cjs')
 
 if (!fs.existsSync(entry)) {
   console.error('[bundle-vercel-api] missing entry:', entry)
@@ -34,4 +34,4 @@ await esbuild.build({
   logLevel: 'info',
 })
 
-console.log('[bundle-vercel-api] wrote api/[...route].js (CJS, all lib/ inlined)')
+console.log('[bundle-vercel-api] wrote api/[...route].cjs (CJS, all lib/ inlined)')

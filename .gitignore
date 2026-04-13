@@ -10,7 +10,8 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
-# api/[...route].js is a committed pre-built bundle (not gitignored)
+# api/[...route].cjs is the committed pre-built bundle; ignore the old .js
+api/\[...route\].js
 *.local
 
 # Editor directories and files
