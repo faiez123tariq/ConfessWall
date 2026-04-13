@@ -1,40 +1,5 @@
-var __create = Object.create;
-var __defProp = Object.defineProperty;
-var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
-var __getOwnPropNames = Object.getOwnPropertyNames;
-var __getProtoOf = Object.getPrototypeOf;
-var __hasOwnProp = Object.prototype.hasOwnProperty;
-var __export = (target, all) => {
-  for (var name in all)
-    __defProp(target, name, { get: all[name], enumerable: true });
-};
-var __copyProps = (to, from, except, desc) => {
-  if (from && typeof from === "object" || typeof from === "function") {
-    for (let key of __getOwnPropNames(from))
-      if (!__hasOwnProp.call(to, key) && key !== except)
-        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
-  }
-  return to;
-};
-var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
-  // If the importer is in node compatibility mode or this is not an ESM
-  // file that has been converted to a CommonJS file using a Babel-
-  // compatible transform (i.e. "__esModule" has not been set), then set
-  // "default" to the CommonJS "module.exports" for node compatibility.
-  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
-  mod
-));
-var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
-
-// src-api/route.ts
-var route_exports = {};
-__export(route_exports, {
-  default: () => handler
-});
-module.exports = __toCommonJS(route_exports);
-
 // lib/api-server/supabaseAdmin.ts
-var import_supabase_js = require("@supabase/supabase-js");
+import { createClient } from "@supabase/supabase-js";
 function getSupabaseAdmin() {
   const supabaseUrl = (process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL ?? "").trim();
   const serviceRoleKey = (process.env.SUPABASE_SERVICE_ROLE_KEY ?? "").trim();
@@ -43,7 +8,7 @@ function getSupabaseAdmin() {
       "Missing Supabase env: set SUPABASE_SERVICE_ROLE_KEY and SUPABASE_URL (or VITE_SUPABASE_URL) in Vercel \u2192 Environment Variables (Production), or in .env.local for local dev."
     );
   }
-  return (0, import_supabase_js.createClient)(supabaseUrl, serviceRoleKey, {
+  return createClient(supabaseUrl, serviceRoleKey, {
     auth: {
       autoRefreshToken: false,
       persistSession: false
@@ -52,7 +17,7 @@ function getSupabaseAdmin() {
 }
 
 // lib/api-server/scoreConfession.ts
-var import_sdk = __toESM(require("@anthropic-ai/sdk"));
+import Anthropic from "@anthropic-ai/sdk";
 var DEFAULT_MODEL = "claude-sonnet-4-6";
 var ROAST_MAX_CHARS = 130;
 function buildPrompt(confessionText) {
@@ -98,7 +63,7 @@ async function runScoreConfession(confessionId, confessionText) {
   }
   const model = process.env.ANTHROPIC_MODEL ?? DEFAULT_MODEL;
   try {
-    const anthropic = new import_sdk.default({ apiKey });
+    const anthropic = new Anthropic({ apiKey });
     const message = await anthropic.messages.create({
       model,
       max_tokens: 320,
@@ -216,7 +181,7 @@ async function processConfess(body) {
 }
 
 // lib/api-server/hostToken.ts
-var import_node_crypto = require("node:crypto");
+import { createHash, createHmac, timingSafeEqual } from "node:crypto";
 var TTL_SEC = 4 * 60 * 60;
 function getSecret() {
   return process.env.HOST_PASSWORD ?? "";
@@ -229,7 +194,7 @@ function signHostToken() {
     JSON.stringify({ exp, typ: "host" }),
     "utf8"
   ).toString("base64url");
-  const sig = (0, import_node_crypto.createHmac)("sha256", secret).update(payload).digest("base64url");
+  const sig = createHmac("sha256", secret).update(payload).digest("base64url");
   return `${payload}.${sig}`;
 }
 function verifyHostToken(token) {
@@ -239,11 +204,11 @@ function verifyHostToken(token) {
   if (parts.length !== 2) return false;
   const [payloadB64, sig] = parts;
   if (!payloadB64 || !sig) return false;
-  const expected = (0, import_node_crypto.createHmac)("sha256", secret).update(payloadB64).digest("base64url");
+  const expected = createHmac("sha256", secret).update(payloadB64).digest("base64url");
   const sigBuf = Buffer.from(sig, "utf8");
   const expBuf = Buffer.from(expected, "utf8");
   if (sigBuf.length !== expBuf.length) return false;
-  if (!(0, import_node_crypto.timingSafeEqual)(sigBuf, expBuf)) return false;
+  if (!timingSafeEqual(sigBuf, expBuf)) return false;
   try {
     const json = JSON.parse(
       Buffer.from(payloadB64, "base64url").toString("utf8")
@@ -256,9 +221,9 @@ function verifyHostToken(token) {
   }
 }
 function safeEqualPassword(a, b) {
-  const ha = (0, import_node_crypto.createHash)("sha256").update(a, "utf8").digest();
-  const hb = (0, import_node_crypto.createHash)("sha256").update(b, "utf8").digest();
-  return (0, import_node_crypto.timingSafeEqual)(ha, hb);
+  const ha = createHash("sha256").update(a, "utf8").digest();
+  const hb = createHash("sha256").update(b, "utf8").digest();
+  return timingSafeEqual(ha, hb);
 }
 
 // lib/api-server/deleteConfessionService.ts
@@ -400,14 +365,14 @@ ${WRAPPER_CLOSE}`;
 }
 
 // lib/api-server/mailer.ts
-var import_nodemailer = __toESM(require("nodemailer"));
+import nodemailer from "nodemailer";
 function createMailTransporter() {
   const user = process.env.GMAIL_USER?.trim();
   const pass = process.env.GMAIL_APP_PASSWORD?.trim();
   if (!user || !pass) {
     return null;
   }
-  return import_nodemailer.default.createTransport({
+  return nodemailer.createTransport({
     service: "gmail",
     auth: { user, pass }
   });
@@ -881,3 +846,6 @@ async function handler(req, res) {
     res.status(500).json({ error: { message } });
   }
 }
+export {
+  handler as default
+};
