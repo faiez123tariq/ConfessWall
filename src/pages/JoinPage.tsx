@@ -59,11 +59,22 @@ export default function JoinPage() {
 
     setLoading(true)
     try {
-      const res = await fetch('/api/join', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, gender }),
-      })
+      let res: Response
+      try {
+        res = await fetch('/api/join', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, gender }),
+        })
+      } catch {
+        toast.error('No response from server', {
+          description: 'Your browser never got an HTTP reply (offline, DNS, VPN, or ad blocker).',
+        })
+        setFormError(
+          'No HTTP response — check internet, disable blockers for this site, or try another network. This is different from HTTP 500 (which means Vercel answered but the API failed).'
+        )
+        return
+      }
 
       const raw = await res.text()
       let json: JoinResponse | null = null
@@ -76,7 +87,7 @@ export default function JoinPage() {
       if (!json) {
         if (!res.ok) {
           setFormError(
-            `Server error (${res.status}). The response was not JSON — often this means the API crashed on Vercel. Check Vercel → Deployment → Functions logs and env vars (Supabase + VITE_SESSION_ID).`
+            `Server error (${res.status}). Body was not JSON — the function may have crashed. In Vercel: Logs → filter /api/join. Set Production env: SUPABASE_SERVICE_ROLE_KEY, VITE_SUPABASE_URL (or SUPABASE_URL), VITE_SESSION_ID (active session UUID).`
           )
           toast.error('Server error', { description: `HTTP ${res.status}` })
         } else {
@@ -99,8 +110,11 @@ export default function JoinPage() {
         }
         setFormError(
           json.error.message ??
-            'Something went wrong on the server. Check Vercel env: SUPABASE_SERVICE_ROLE_KEY, VITE_SUPABASE_URL (or SUPABASE_URL), and VITE_SESSION_ID.'
+            'Server error. In Vercel → Environment Variables (Production): SUPABASE_SERVICE_ROLE_KEY, VITE_SUPABASE_URL or SUPABASE_URL, and VITE_SESSION_ID matching an active row in Supabase sessions.'
         )
+        toast.error('Join failed', {
+          description: json.error.message ?? `HTTP ${res.status}`,
+        })
         return
       }
 
@@ -110,16 +124,15 @@ export default function JoinPage() {
       }
 
       const { attendeeId, sessionId } = json.data
-      writeStoredJoin(attendeeId, sessionId)
-      setAttendee(attendeeId, sessionId)
-      navigate('/wall', { replace: true })
-    } catch {
-      toast.error('Check your connection', {
-        description: 'Could not reach the server.',
-      })
-      setFormError(
-        'Could not complete the request (browser blocked or no connection). If the Network tab shows HTTP 500, the failure is on the server — fix Vercel env and Supabase session, not your Wi‑Fi.'
-      )
+      try {
+        writeStoredJoin(attendeeId, sessionId)
+        setAttendee(attendeeId, sessionId)
+        navigate('/wall', { replace: true })
+      } catch {
+        setFormError(
+          'Registration succeeded but this browser blocked saving (private mode or storage full). Allow site data or try another browser.'
+        )
+      }
     } finally {
       setLoading(false)
     }
