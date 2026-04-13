@@ -1,5 +1,5 @@
-import { verifyHostToken } from './hostToken'
-import { getSupabaseAdmin } from './supabaseAdmin'
+import { verifyHostToken } from './hostToken.js'
+import { getSupabaseAdmin } from './supabaseAdmin.js'
 
 export type DeleteConfessionJson =
   | { data: { ok: true } }

@@ -1,7 +1,7 @@
 import type { Database } from '../../src/types/database'
 
-import { getSupabaseAdmin } from './supabaseAdmin'
-import { runScoreConfession } from './scoreConfession'
+import { getSupabaseAdmin } from './supabaseAdmin.js'
+import { runScoreConfession } from './scoreConfession.js'
 
 type ConfessionRow = Database['public']['Tables']['confessions']['Row']
 

@@ -1,4 +1,4 @@
-import { signHostToken, safeEqualPassword } from './hostToken'
+import { signHostToken, safeEqualPassword } from './hostToken.js'
 
 export type VerifyHostJson =
   | { data: { verified: true; token: string } }

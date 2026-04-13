@@ -1,6 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk'
 
-import { getSupabaseAdmin } from './supabaseAdmin'
+import { getSupabaseAdmin } from './supabaseAdmin.js'
 
 const DEFAULT_MODEL = 'claude-sonnet-4-6'
 

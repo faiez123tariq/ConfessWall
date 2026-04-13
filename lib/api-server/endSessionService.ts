@@ -2,10 +2,10 @@ import {
   firstNameFromFullName,
   getFemaleEmail,
   getMaleEmail,
-} from './emailTemplates'
-import { createMailTransporter, getGmailFromAddress } from './mailer'
-import { verifyHostToken } from './hostToken'
-import { getSupabaseAdmin } from './supabaseAdmin'
+} from './emailTemplates.js'
+import { createMailTransporter, getGmailFromAddress } from './mailer.js'
+import { verifyHostToken } from './hostToken.js'
+import { getSupabaseAdmin } from './supabaseAdmin.js'
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => {
