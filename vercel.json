@@ -3,7 +3,7 @@
   "functions": {
     "api/[...route].ts": {
       "maxDuration": 60,
-      "includeFiles": "lib/api-server/**"
+      "includeFiles": "lib/**"
     }
   },
   "rewrites": [
