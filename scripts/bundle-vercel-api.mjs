@@ -34,4 +34,4 @@ await esbuild.build({
   logLevel: 'info',
 })
 
-console.log('[bundle-vercel-api] wrote api/[...route].cjs (CJS, all lib/ inlined)')
+console.log('[bundle-vercel-api] wrote api/[...route].cjs (CJS, all lib/ inlined..)')
