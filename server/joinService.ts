@@ -1,4 +1,4 @@
-import { supabaseAdmin } from './supabaseAdmin'
+import { getSupabaseAdmin } from './supabaseAdmin'
 
 const EMAIL_RE =
   /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/
@@ -70,20 +70,41 @@ export async function processJoin(
     }
   }
 
-  const { data: session, error: sessionError } = await supabaseAdmin
+  const db = getSupabaseAdmin()
+
+  const { data: session, error: sessionError } = await db
     .from('sessions')
     .select('id, status')
     .eq('id', sessionId)
     .single()
 
-  if (sessionError || !session || session.status !== 'active') {
+  if (sessionError) {
+    const noRow = sessionError.code === 'PGRST116'
     return {
       status: 500,
-      json: { error: { message: 'Session is missing or not active.' } },
+      json: {
+        error: {
+          message: noRow
+            ? 'No session row matches VITE_SESSION_ID. In Supabase, copy an active session UUID into that env var on Vercel and redeploy.'
+            : `Could not read session (${sessionError.code ?? 'database'}). Check SUPABASE_SERVICE_ROLE_KEY and Supabase URL.`,
+        },
+      },
     }
   }
 
-  const { data: attendee, error: insertError } = await supabaseAdmin
+  if (!session || session.status !== 'active') {
+    return {
+      status: 500,
+      json: {
+        error: {
+          message:
+            'Session exists but is not active (status must be "active"), or VITE_SESSION_ID is wrong.',
+        },
+      },
+    }
+  }
+
+  const { data: attendee, error: insertError } = await db
     .from('attendees')
     .insert({
       session_id: sessionId,
@@ -96,7 +117,7 @@ export async function processJoin(
 
   if (insertError) {
     if (insertError.code === '23505') {
-      const { data: existing, error: lookupError } = await supabaseAdmin
+      const { data: existing, error: lookupError } = await db
         .from('attendees')
         .select('id')
         .eq('session_id', sessionId)

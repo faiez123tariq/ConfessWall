@@ -65,7 +65,25 @@ export default function JoinPage() {
         body: JSON.stringify({ name, email, gender }),
       })
 
-      const json = (await res.json()) as JoinResponse
+      const raw = await res.text()
+      let json: JoinResponse | null = null
+      try {
+        json = raw ? (JSON.parse(raw) as JoinResponse) : null
+      } catch {
+        json = null
+      }
+
+      if (!json) {
+        if (!res.ok) {
+          setFormError(
+            `Server error (${res.status}). The response was not JSON — often this means the API crashed on Vercel. Check Vercel → Deployment → Functions logs and env vars (Supabase + VITE_SESSION_ID).`
+          )
+          toast.error('Server error', { description: `HTTP ${res.status}` })
+        } else {
+          setFormError('Unexpected response from server.')
+        }
+        return
+      }
 
       if (!res.ok && 'error' in json) {
         if (res.status === 400 && json.error.fields) {
@@ -79,7 +97,10 @@ export default function JoinPage() {
           )
           return
         }
-        setFormError(json.error.message ?? 'Something went wrong.')
+        setFormError(
+          json.error.message ??
+            'Something went wrong on the server. Check Vercel env: SUPABASE_SERVICE_ROLE_KEY, VITE_SUPABASE_URL (or SUPABASE_URL), and VITE_SESSION_ID.'
+        )
         return
       }
 
@@ -96,7 +117,9 @@ export default function JoinPage() {
       toast.error('Check your connection', {
         description: 'Could not reach the server.',
       })
-      setFormError('Network error. Check your connection and try again.')
+      setFormError(
+        'Could not complete the request (browser blocked or no connection). If the Network tab shows HTTP 500, the failure is on the server — fix Vercel env and Supabase session, not your Wi‑Fi.'
+      )
     } finally {
       setLoading(false)
     }

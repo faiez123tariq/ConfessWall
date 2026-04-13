@@ -1,6 +1,6 @@
 import type { Database } from '../src/types/database'
 
-import { supabaseAdmin } from './supabaseAdmin'
+import { getSupabaseAdmin } from './supabaseAdmin'
 import { runScoreConfession } from './scoreConfession'
 
 type ConfessionRow = Database['public']['Tables']['confessions']['Row']
@@ -60,7 +60,9 @@ export async function processConfess(body: Record<string, unknown>): Promise<{
     }
   }
 
-  const { data: session, error: sessionError } = await supabaseAdmin
+  const db = getSupabaseAdmin()
+
+  const { data: session, error: sessionError } = await db
     .from('sessions')
     .select('id, status')
     .eq('id', sessionId)
@@ -73,7 +75,7 @@ export async function processConfess(body: Record<string, unknown>): Promise<{
     }
   }
 
-  const { data: attendee, error: attendeeError } = await supabaseAdmin
+  const { data: attendee, error: attendeeError } = await db
     .from('attendees')
     .select('id, session_id')
     .eq('id', attendeeId)
@@ -86,7 +88,7 @@ export async function processConfess(body: Record<string, unknown>): Promise<{
     }
   }
 
-  const { count, error: countError } = await supabaseAdmin
+  const { count, error: countError } = await db
     .from('confessions')
     .select('id', { count: 'exact', head: true })
     .eq('attendee_id', attendeeId)
@@ -112,7 +114,7 @@ export async function processConfess(body: Record<string, unknown>): Promise<{
     }
   }
 
-  const { data: confession, error: insertError } = await supabaseAdmin
+  const { data: confession, error: insertError } = await db
     .from('confessions')
     .insert({
       session_id: sessionId,

@@ -5,7 +5,7 @@ import {
 } from './emailTemplates'
 import { createMailTransporter, getGmailFromAddress } from './mailer'
 import { verifyHostToken } from './hostToken'
-import { supabaseAdmin } from './supabaseAdmin'
+import { getSupabaseAdmin } from './supabaseAdmin'
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => {
@@ -52,7 +52,9 @@ export async function processEndSession(
     }
   }
 
-  const { data: session, error: sessionError } = await supabaseAdmin
+  const db = getSupabaseAdmin()
+
+  const { data: session, error: sessionError } = await db
     .from('sessions')
     .select('id, status')
     .eq('id', sessionId)
@@ -72,7 +74,7 @@ export async function processEndSession(
     }
   }
 
-  const { count: attendeeCount, error: countError } = await supabaseAdmin
+  const { count: attendeeCount, error: countError } = await db
     .from('attendees')
     .select('id', { count: 'exact', head: true })
     .eq('session_id', sessionId)
@@ -84,7 +86,7 @@ export async function processEndSession(
     }
   }
 
-  const { data: pendingRows, error: pendingError } = await supabaseAdmin
+  const { data: pendingRows, error: pendingError } = await db
     .from('attendees')
     .select('id, email, gender, name')
     .eq('session_id', sessionId)
@@ -99,7 +101,7 @@ export async function processEndSession(
 
   const pending = pendingRows ?? []
 
-  const { error: updateError } = await supabaseAdmin
+  const { error: updateError } = await db
     .from('sessions')
     .update({
       status: 'ended',
@@ -157,7 +159,7 @@ export async function processEndSession(
         html: content.html,
       })
 
-      const { error: markError } = await supabaseAdmin
+      const { error: markError } = await db
         .from('attendees')
         .update({ email_sent: true })
         .eq('id', row.id)

@@ -35,52 +35,61 @@ export default async function handler(
 ): Promise<void> {
   res.setHeader('Content-Type', 'application/json')
 
-  const segments = routeSegments(req)
-  const name = segments[0] ?? ''
+  try {
+    const segments = routeSegments(req)
+    const name = segments[0] ?? ''
 
-  if (!name) {
-    res.status(404).json({ error: { message: 'Not found' } })
-    return
-  }
-
-  if (name === 'join' && req.method === 'POST') {
-    const result = await processJoin(parseVercelBody(req))
-    res.status(result.status).json(result.json)
-    return
-  }
-
-  if (name === 'confess' && req.method === 'POST') {
-    const out = await processConfess(parseVercelBody(req))
-    if (out.backgroundWork) {
-      waitUntil(out.backgroundWork)
+    if (!name) {
+      res.status(404).json({ error: { message: 'Not found' } })
+      return
     }
-    res.status(out.status).json(out.json)
-    return
-  }
 
-  if (name === 'upvote' && req.method === 'POST') {
-    const out = await processUpvote(parseVercelBody(req))
-    res.status(out.status).json(out.json)
-    return
-  }
+    const body = parseVercelBody(req)
 
-  if (name === 'verify-host' && req.method === 'POST') {
-    const out = processVerifyHost(parseVercelBody(req))
-    res.status(out.status).json(out.json)
-    return
-  }
+    if (name === 'join' && req.method === 'POST') {
+      const result = await processJoin(body)
+      res.status(result.status).json(result.json)
+      return
+    }
 
-  if (name === 'end-session' && req.method === 'POST') {
-    const out = await processEndSession(parseVercelBody(req))
-    res.status(out.status).json(out.json)
-    return
-  }
+    if (name === 'confess' && req.method === 'POST') {
+      const out = await processConfess(body)
+      if (out.backgroundWork) {
+        waitUntil(out.backgroundWork)
+      }
+      res.status(out.status).json(out.json)
+      return
+    }
 
-  if (name === 'delete-confession' && req.method === 'DELETE') {
-    const out = await processDeleteConfession(parseVercelBody(req))
-    res.status(out.status).json(out.json)
-    return
-  }
+    if (name === 'upvote' && req.method === 'POST') {
+      const out = await processUpvote(body)
+      res.status(out.status).json(out.json)
+      return
+    }
 
-  res.status(404).json({ error: { message: 'Not found' } })
+    if (name === 'verify-host' && req.method === 'POST') {
+      const out = processVerifyHost(body)
+      res.status(out.status).json(out.json)
+      return
+    }
+
+    if (name === 'end-session' && req.method === 'POST') {
+      const out = await processEndSession(body)
+      res.status(out.status).json(out.json)
+      return
+    }
+
+    if (name === 'delete-confession' && req.method === 'DELETE') {
+      const out = await processDeleteConfession(body)
+      res.status(out.status).json(out.json)
+      return
+    }
+
+    res.status(404).json({ error: { message: 'Not found' } })
+  } catch (err) {
+    console.error('[api]', req.method, req.url, err)
+    const message =
+      err instanceof Error ? err.message : 'Unexpected server error.'
+    res.status(500).json({ error: { message } })
+  }
 }

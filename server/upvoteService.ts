@@ -1,4 +1,4 @@
-import { supabaseAdmin } from './supabaseAdmin'
+import { getSupabaseAdmin } from './supabaseAdmin'
 
 export type UpvoteJson =
   | { data: { confessionId: string; upvotes: number } }
@@ -41,7 +41,9 @@ export async function processUpvote(body: Record<string, unknown>): Promise<{
     }
   }
 
-  const { data: attendee, error: attendeeError } = await supabaseAdmin
+  const db = getSupabaseAdmin()
+
+  const { data: attendee, error: attendeeError } = await db
     .from('attendees')
     .select('id, session_id')
     .eq('id', attendeeId)
@@ -54,7 +56,7 @@ export async function processUpvote(body: Record<string, unknown>): Promise<{
     }
   }
 
-  const { data: confession, error: confessionError } = await supabaseAdmin
+  const { data: confession, error: confessionError } = await db
     .from('confessions')
     .select('id, session_id, attendee_id, deleted, upvotes')
     .eq('id', confessionId)
@@ -86,7 +88,7 @@ export async function processUpvote(body: Record<string, unknown>): Promise<{
     }
   }
 
-  const { error: insertError } = await supabaseAdmin.from('upvotes').insert({
+  const { error: insertError } = await db.from('upvotes').insert({
     confession_id: confessionId,
     attendee_id: attendeeId,
   })
@@ -109,7 +111,7 @@ export async function processUpvote(body: Record<string, unknown>): Promise<{
     }
   }
 
-  const { data: updated, error: readError } = await supabaseAdmin
+  const { data: updated, error: readError } = await db
     .from('confessions')
     .select('upvotes')
     .eq('id', confessionId)

@@ -1,6 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk'
 
-import { supabaseAdmin } from './supabaseAdmin'
+import { getSupabaseAdmin } from './supabaseAdmin'
 
 const DEFAULT_MODEL = 'claude-sonnet-4-6'
 
@@ -90,7 +90,7 @@ export async function runScoreConfession(
       return
     }
 
-    const { error } = await supabaseAdmin
+    const { error } = await getSupabaseAdmin()
       .from('confessions')
       .update({
         chaos_score: parsed.chaos_score,

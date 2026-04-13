@@ -1,5 +1,5 @@
 import { verifyHostToken } from './hostToken'
-import { supabaseAdmin } from './supabaseAdmin'
+import { getSupabaseAdmin } from './supabaseAdmin'
 
 export type DeleteConfessionJson =
   | { data: { ok: true } }
@@ -37,7 +37,9 @@ export async function processDeleteConfession(
     }
   }
 
-  const { data: row, error: readError } = await supabaseAdmin
+  const db = getSupabaseAdmin()
+
+  const { data: row, error: readError } = await db
     .from('confessions')
     .select('id, session_id')
     .eq('id', confessionId)
@@ -50,7 +52,7 @@ export async function processDeleteConfession(
     }
   }
 
-  const { error: updateError } = await supabaseAdmin
+  const { error: updateError } = await db
     .from('confessions')
     .update({ deleted: true })
     .eq('id', confessionId)
