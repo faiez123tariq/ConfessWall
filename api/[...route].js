@@ -1,4 +1,3 @@
-"use strict";
 var __create = Object.create;
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
@@ -27,7 +26,7 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 ));
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-// api/[...route].ts
+// src-api/route.ts
 var route_exports = {};
 __export(route_exports, {
   default: () => handler
@@ -800,7 +799,7 @@ function processVerifyHost(body) {
   };
 }
 
-// api/[...route].ts
+// src-api/route.ts
 function routeSegments(req) {
   const q = req.query.route;
   if (Array.isArray(q)) return q;

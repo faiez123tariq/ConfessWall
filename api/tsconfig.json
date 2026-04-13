@@ -12,7 +12,7 @@
     "types": ["node"]
   },
   "include": [
-    "./**/*.ts",
+    "../src-api/**/*.ts",
     "../lib/api-server/**/*.ts",
     "../src/types/database.ts"
   ]
