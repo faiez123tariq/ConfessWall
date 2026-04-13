@@ -56,8 +56,11 @@ export async function processJoin(
 
   const gender = genderRaw as 'male' | 'female'
 
-  const sessionId =
-    process.env.VITE_SESSION_ID ?? process.env.SESSION_ID ?? ''
+  const sessionId = (
+    process.env.VITE_SESSION_ID ??
+    process.env.SESSION_ID ??
+    ''
+  ).trim()
 
   if (!sessionId) {
     return {

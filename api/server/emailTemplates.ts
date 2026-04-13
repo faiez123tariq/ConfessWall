@@ -16,16 +16,20 @@ function escapeHtml(s: string): string {
     .replace(/"/g, '&quot;')
 }
 
-const WRAPPER_OPEN = `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#f4f4f5;margin:0;padding:24px 12px;font-family:Georgia,'Times New Roman',serif;">
+function wrapperOpen(outerBg: string): string {
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:${outerBg};margin:0;padding:24px 12px;font-family:Georgia,'Times New Roman',serif;">
   <tr><td align="center">
-  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" style="max-width:600px;background-color:#ffffff;border-radius:8px;overflow:hidden;border:1px solid #e4e4e7;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" style="max-width:600px;background-color:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #e4e4e7;box-shadow:0 4px 24px rgba(0,0,0,0.06);">
   <tr><td style="padding:28px 32px 32px 32px;">`
+}
 
 const WRAPPER_CLOSE = `</td></tr></table></td></tr></table>`
 
 const P =
-  'margin:0 0 16px 0;font-size:16px;line-height:1.6;color:#3f3f46;'
-const SIGNOFF = 'margin:24px 0 0 0;font-size:16px;line-height:1.6;color:#3f3f46;'
+  'margin:0 0 16px 0;font-size:16px;line-height:1.65;color:#3f3f46;'
+const SIGNOFF = 'margin:24px 0 0 0;font-size:16px;line-height:1.65;color:#3f3f46;'
+const DEAR =
+  'margin:0 0 8px 0;font-size:15px;line-height:1.5;color:#71717a;font-style:italic;'
 
 /** First token of full name, for greeting. */
 export function firstNameFromFullName(fullName: string): string {
@@ -40,34 +44,39 @@ export function getMaleEmail(
 ): EmailContent {
   const fn = escapeHtml(firstName)
   const pn = escapeHtml(presenterName)
-  const text = `Hey ${firstName},
+  const text = `Dear Prince ${firstName},
 
-Just wanted to take a moment to say — thank you for being in the room today.
+From the bottom of my heart — thank you. Your presence in the room today
+truly meant the world. A wise prince (or young king!) knows when to listen,
+when to lean in, and when to share his light — and you brought all of that
+grace and curiosity with you.
 
-Seriously. In a world full of distractions, choosing to sit down, listen,
-and engage with new ideas takes something. You brought that today.
+In a kingdom full of noise and distraction, you chose to sit with us, pay
+attention, and take part in something real. That is no small thing; it is
+the mark of someone who leads with both mind and heart.
 
-I hope the session sparked something for you — whether it's curiosity about
-Spec-Driven Development, a new way to think about AI, or just a reminder
-that technology is something you can shape, not just consume.
+I hope you carry away a spark from our time together — about Spec-Driven
+Development, about AI, or simply the quiet reminder that you get to shape
+the tools and ideas around you, not only receive them.
 
-Keep building. Keep questioning. The best ideas usually start exactly where
-you are right now.
+May your curiosity stay bold and your kindness stay steadfast. The very
+best chapters often begin exactly where you are now.
 
-See you at the next one,
+With sincere gratitude and respect,
 ${presenterName}`
 
-  const html = `${WRAPPER_OPEN}
-<p style="${P}">Hey ${fn},</p>
-<p style="${P}">Just wanted to take a moment to say — thank you for being in the room today.</p>
-<p style="${P}">Seriously. In a world full of distractions, choosing to sit down, listen, and engage with new ideas takes something. You brought that today.</p>
-<p style="${P}">I hope the session sparked something for you — whether it's curiosity about Spec-Driven Development, a new way to think about AI, or just a reminder that technology is something you can shape, not just consume.</p>
-<p style="${P}">Keep building. Keep questioning. The best ideas usually start exactly where you are right now.</p>
-<p style="${SIGNOFF}">See you at the next one,<br/><span style="color:#18181b;font-weight:600;">${pn}</span></p>
+  const html = `${wrapperOpen('#eff6ff')}
+<p style="${DEAR}">To a most gracious prince,</p>
+<p style="${P}">Dear <strong>${fn}</strong>,</p>
+<p style="${P}">From the bottom of my heart — <em>thank you</em>. Your presence in the room today truly meant the world. A wise prince (or young king!) knows when to listen, when to lean in, and when to share his light — and you brought all of that grace and curiosity with you.</p>
+<p style="${P}">In a kingdom full of noise and distraction, you chose to sit with us, pay attention, and take part in something real. That is no small thing; it is the mark of someone who leads with both mind and heart.</p>
+<p style="${P}">I hope you carry away a spark from our time together — about Spec-Driven Development, about AI, or simply the quiet reminder that you get to shape the tools and ideas around you, not only receive them.</p>
+<p style="${P}">May your curiosity stay bold and your kindness stay steadfast. The very best chapters often begin exactly where you are now.</p>
+<p style="${SIGNOFF}">With sincere gratitude and respect,<br/><span style="color:#1e3a5f;font-weight:600;">${pn}</span> <span aria-hidden="true">👑</span></p>
 ${WRAPPER_CLOSE}`
 
   return {
-    subject: 'You showed up — and that matters 🙌',
+    subject: 'A royal thank-you — you were wonderful today 👑',
     html,
     text,
   }
@@ -79,35 +88,40 @@ export function getFemaleEmail(
 ): EmailContent {
   const fn = escapeHtml(firstName)
   const pn = escapeHtml(presenterName)
-  const text = `Hi ${firstName},
+  const text = `Dear Princess ${firstName},
 
-I just wanted to reach out personally and say — thank you.
+I am writing with the warmest, most heartfelt thank you — the kind saved
+for fairy tales and for people who make an ordinary room feel a little
+more magical.
 
-Thank you for showing up, for paying attention, and for being part of
-something that felt genuinely alive today. The energy in that room was
-real, and you were part of creating it.
+Thank you for gracing our gathering with your kindness, your attention,
+and your beautiful curiosity. Like the kindest heroines in the stories we
+grew up with, you showed up with courage and an open heart — and that
+made the whole session brighter.
 
-I hope something from today stays with you — a thought, an idea, maybe
-just a spark of curiosity about what's possible with AI and the way we
-build software. You deserve to be in those conversations.
+I truly hope something from today nestles softly in your heart: a new idea
+about Spec-Driven Development, a gentle spark about AI, or simply the
+reminder that you belong in every room where the future is being shaped —
+because you do.
 
-Whatever you're working on, whatever you're building toward — keep going.
-You're more capable than you probably give yourself credit for.
+You are capable of more than you know. Keep dreaming boldly, building
+gently, and trusting the wonderful story only you can write.
 
-With gratitude,
+With all my appreciation and a curtsy from afar,
 ${presenterName}`
 
-  const html = `${WRAPPER_OPEN}
-<p style="${P}">Hi ${fn},</p>
-<p style="${P}">I just wanted to reach out personally and say — thank you.</p>
-<p style="${P}">Thank you for showing up, for paying attention, and for being part of something that felt genuinely alive today. The energy in that room was real, and you were part of creating it.</p>
-<p style="${P}">I hope something from today stays with you — a thought, an idea, maybe just a spark of curiosity about what's possible with AI and the way we build software. You deserve to be in those conversations.</p>
-<p style="${P}">Whatever you're working on, whatever you're building toward — keep going. You're more capable than you probably give yourself credit for.</p>
-<p style="${SIGNOFF}">With gratitude,<br/><span style="color:#18181b;font-weight:600;">${pn}</span></p>
+  const html = `${wrapperOpen('#fdf2f8')}
+<p style="${DEAR}">For a very special princess,</p>
+<p style="${P}">Dear <strong>${fn}</strong>,</p>
+<p style="${P}">I am writing with the warmest, most heartfelt thank you — the kind saved for fairy tales and for people who make an ordinary room feel a little more magical.</p>
+<p style="${P}">Thank you for gracing our gathering with your kindness, your attention, and your beautiful curiosity. Like the kindest heroines in the stories we grew up with, you showed up with courage and an open heart — and that made the whole session brighter.</p>
+<p style="${P}">I truly hope something from today nestles softly in your heart: a new idea about Spec-Driven Development, a gentle spark about AI, or simply the reminder that you belong in every room where the future is being shaped — because you do.</p>
+<p style="${P}">You are capable of more than you know. Keep dreaming boldly, building gently, and trusting the wonderful story only you can write.</p>
+<p style="${SIGNOFF}">With all my appreciation (and a curtsy from afar),<br/><span style="color:#9d174d;font-weight:600;">${pn}</span> <span aria-hidden="true">✨</span></p>
 ${WRAPPER_CLOSE}`
 
   return {
-    subject: 'Thank you for being there today ✨',
+    subject: 'A little thank-you, fit for a princess ✨',
     html,
     text,
   }

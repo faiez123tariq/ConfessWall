@@ -31,21 +31,40 @@ function parseEnvFileContent(content: string): Record<string, string> {
 }
 
 function applyEnvFromDotenvFiles(mode: string, envDir: string): void {
-  const names = ['.env', '.env.local', `.env.${mode}`, `.env.${mode}.local`]
-  const merged: Record<string, string> = {}
-  for (const name of names) {
+  const baseNames = ['.env', `.env.${mode}`]
+  const localNames = ['.env.local', `.env.${mode}.local`]
+
+  const baseMerged: Record<string, string> = {}
+  for (const name of baseNames) {
     const full = path.join(envDir, name)
     try {
       if (!fs.statSync(full).isFile()) continue
     } catch {
       continue
     }
-    Object.assign(merged, parseEnvFileContent(fs.readFileSync(full, 'utf-8')))
+    Object.assign(baseMerged, parseEnvFileContent(fs.readFileSync(full, 'utf-8')))
   }
-  for (const [key, value] of Object.entries(merged)) {
+  for (const [key, value] of Object.entries(baseMerged)) {
     if (value === '') continue
     const cur = process.env[key]
     if (cur === undefined || cur === '') {
+      process.env[key] = value
+    }
+  }
+
+  // `.env.local` must win over machine/shell env (common cause: stale VITE_SESSION_ID on Windows).
+  const localMerged: Record<string, string> = {}
+  for (const name of localNames) {
+    const full = path.join(envDir, name)
+    try {
+      if (!fs.statSync(full).isFile()) continue
+    } catch {
+      continue
+    }
+    Object.assign(localMerged, parseEnvFileContent(fs.readFileSync(full, 'utf-8')))
+  }
+  for (const [key, value] of Object.entries(localMerged)) {
+    if (value !== '') {
       process.env[key] = value
     }
   }
