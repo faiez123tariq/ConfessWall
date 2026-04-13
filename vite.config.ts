@@ -91,12 +91,12 @@ async function runDevApi(
   body: Record<string, unknown>
 ): Promise<DevApiResult | null> {
   if (method === 'POST' && pathname === '/api/join') {
-    const { processJoin } = await import('./api/server/joinService')
+    const { processJoin } = await import('./lib/api-server/joinService')
     const r = await processJoin(body)
     return { status: r.status, json: r.json }
   }
   if (method === 'POST' && pathname === '/api/confess') {
-    const { processConfess } = await import('./api/server/confessService')
+    const { processConfess } = await import('./lib/api-server/confessService')
     const r = await processConfess(body)
     return {
       status: r.status,
@@ -105,23 +105,23 @@ async function runDevApi(
     }
   }
   if (method === 'POST' && pathname === '/api/upvote') {
-    const { processUpvote } = await import('./api/server/upvoteService')
+    const { processUpvote } = await import('./lib/api-server/upvoteService')
     const r = await processUpvote(body)
     return { status: r.status, json: r.json }
   }
   if (method === 'POST' && pathname === '/api/verify-host') {
-    const { processVerifyHost } = await import('./api/server/verifyHostService')
+    const { processVerifyHost } = await import('./lib/api-server/verifyHostService')
     const r = processVerifyHost(body)
     return { status: r.status, json: r.json }
   }
   if (method === 'POST' && pathname === '/api/end-session') {
-    const { processEndSession } = await import('./api/server/endSessionService')
+    const { processEndSession } = await import('./lib/api-server/endSessionService')
     const r = await processEndSession(body)
     return { status: r.status, json: r.json }
   }
   if (method === 'DELETE' && pathname === '/api/delete-confession') {
     const { processDeleteConfession } = await import(
-      './api/server/deleteConfessionService'
+      './lib/api-server/deleteConfessionService'
     )
     const r = await processDeleteConfession(body)
     return { status: r.status, json: r.json }
